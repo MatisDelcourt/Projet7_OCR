@@ -1,0 +1,16 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/3580a66547b64052a3698c8b453714b8/artifacts
+deleted_time: 1714727978379
+end_time: 1714727642242
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: deleted
+run_id: 3580a66547b64052a3698c8b453714b8
+run_name: AdaBoost - Fold 4
+run_uuid: 3580a66547b64052a3698c8b453714b8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714727610428
+status: 3
+tags: []
+user_id: matis

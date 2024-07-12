@@ -1,0 +1,16 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/43b50187e26f4aaba8b6d57099015589/artifacts
+deleted_time: 1714727978432
+end_time: 1714726434489
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: deleted
+run_id: 43b50187e26f4aaba8b6d57099015589
+run_name: XGBoost - Fold 5
+run_uuid: 43b50187e26f4aaba8b6d57099015589
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714726430130
+status: 3
+tags: []
+user_id: matis

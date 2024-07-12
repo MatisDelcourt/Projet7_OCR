@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/5ba1cfab0acc423883092b26f57aeac0/artifacts
+end_time: 1714731226468
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: active
+run_id: 5ba1cfab0acc423883092b26f57aeac0
+run_name: LGBM - Fold 5
+run_uuid: 5ba1cfab0acc423883092b26f57aeac0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714731223132
+status: 3
+tags: []
+user_id: matis

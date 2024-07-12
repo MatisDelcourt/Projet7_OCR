@@ -1,0 +1,16 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/8657f3e7f34a4c4bb348f0284ecfb9a1/artifacts
+deleted_time: 1714726102004
+end_time: 1714725794447
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: deleted
+run_id: 8657f3e7f34a4c4bb348f0284ecfb9a1
+run_name: CatBoost - Fold 1
+run_uuid: 8657f3e7f34a4c4bb348f0284ecfb9a1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714725755963
+status: 3
+tags: []
+user_id: matis

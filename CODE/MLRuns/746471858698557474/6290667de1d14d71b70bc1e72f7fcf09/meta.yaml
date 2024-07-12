@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/matis/mlruns/746471858698557474/6290667de1d14d71b70bc1e72f7fcf09/artifacts
+end_time: 1715243312345
+entry_point_name: ''
+experiment_id: '746471858698557474'
+lifecycle_stage: active
+run_id: 6290667de1d14d71b70bc1e72f7fcf09
+run_name: lgbm_optuna_opt_3
+run_uuid: 6290667de1d14d71b70bc1e72f7fcf09
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1715243110173
+status: 3
+tags: []
+user_id: matis

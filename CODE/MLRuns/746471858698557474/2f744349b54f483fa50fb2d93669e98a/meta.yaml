@@ -1,0 +1,16 @@
+artifact_uri: file:///C:/Users/matis/mlruns/746471858698557474/2f744349b54f483fa50fb2d93669e98a/artifacts
+deleted_time: 1714740753627
+end_time: 1714739671272
+entry_point_name: ''
+experiment_id: '746471858698557474'
+lifecycle_stage: deleted
+run_id: 2f744349b54f483fa50fb2d93669e98a
+run_name: lgbm_hyperparam_base
+run_uuid: 2f744349b54f483fa50fb2d93669e98a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714739535483
+status: 3
+tags: []
+user_id: matis

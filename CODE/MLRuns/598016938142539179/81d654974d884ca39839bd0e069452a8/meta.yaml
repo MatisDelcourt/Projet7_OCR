@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/81d654974d884ca39839bd0e069452a8/artifacts
+end_time: 1714732169503
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: active
+run_id: 81d654974d884ca39839bd0e069452a8
+run_name: Extra Trees - Fold 4
+run_uuid: 81d654974d884ca39839bd0e069452a8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714732157303
+status: 3
+tags: []
+user_id: matis

@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/matis/mlruns/746471858698557474/941e9c055bf64effb2e296c75817e1f0/artifacts
+end_time: 1715260738058
+entry_point_name: ''
+experiment_id: '746471858698557474'
+lifecycle_stage: active
+run_id: 941e9c055bf64effb2e296c75817e1f0
+run_name: lgbm_smote_base_1
+run_uuid: 941e9c055bf64effb2e296c75817e1f0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1715260388374
+status: 3
+tags: []
+user_id: matis

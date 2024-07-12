@@ -1,0 +1,16 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/eee1e7a61d7946a4a3c9b0d74feec9d6/artifacts
+deleted_time: 1714725309330
+end_time: 1714725076183
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: deleted
+run_id: eee1e7a61d7946a4a3c9b0d74feec9d6
+run_name: Dummy Classifier - Fold 3
+run_uuid: eee1e7a61d7946a4a3c9b0d74feec9d6
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714725074012
+status: 3
+tags: []
+user_id: matis

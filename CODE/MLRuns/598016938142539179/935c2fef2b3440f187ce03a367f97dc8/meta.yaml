@@ -1,0 +1,16 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/935c2fef2b3440f187ce03a367f97dc8/artifacts
+deleted_time: 1714725672168
+end_time: 1714725470941
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: deleted
+run_id: 935c2fef2b3440f187ce03a367f97dc8
+run_name: Logistic Regression - Fold 5
+run_uuid: 935c2fef2b3440f187ce03a367f97dc8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714725454068
+status: 3
+tags: []
+user_id: matis

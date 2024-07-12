@@ -1,0 +1,16 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/95d1a9415cd44134af18c56255095ab5/artifacts
+deleted_time: 1714727978356
+end_time: 1714727772318
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: deleted
+run_id: 95d1a9415cd44134af18c56255095ab5
+run_name: Extra Trees - Fold 5
+run_uuid: 95d1a9415cd44134af18c56255095ab5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714727752739
+status: 3
+tags: []
+user_id: matis

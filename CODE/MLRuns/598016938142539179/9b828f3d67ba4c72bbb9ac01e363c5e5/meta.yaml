@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/9b828f3d67ba4c72bbb9ac01e363c5e5/artifacts
+end_time: 1714729999469
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: active
+run_id: 9b828f3d67ba4c72bbb9ac01e363c5e5
+run_name: Bagging Classifier - Fold 1
+run_uuid: 9b828f3d67ba4c72bbb9ac01e363c5e5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714729838891
+status: 3
+tags: []
+user_id: matis

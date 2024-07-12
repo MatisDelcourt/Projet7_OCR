@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/2bc561eefd14444aa3a6bdb46a1525ef/artifacts
+end_time: 1714731953399
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: active
+run_id: 2bc561eefd14444aa3a6bdb46a1525ef
+run_name: Gradient Boosting - Fold 4
+run_uuid: 2bc561eefd14444aa3a6bdb46a1525ef
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714731870919
+status: 3
+tags: []
+user_id: matis

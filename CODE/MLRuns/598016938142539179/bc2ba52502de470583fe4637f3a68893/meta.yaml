@@ -1,0 +1,16 @@
+artifact_uri: file:///C:/Users/matis/mlruns/598016938142539179/bc2ba52502de470583fe4637f3a68893/artifacts
+deleted_time: 1714727978432
+end_time: 1714726497801
+entry_point_name: ''
+experiment_id: '598016938142539179'
+lifecycle_stage: deleted
+run_id: bc2ba52502de470583fe4637f3a68893
+run_name: Random Forest - Fold 1
+run_uuid: bc2ba52502de470583fe4637f3a68893
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714726434501
+status: 3
+tags: []
+user_id: matis
