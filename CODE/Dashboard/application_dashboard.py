@@ -21,7 +21,7 @@ import shap
 # VARIABLES STATIQUES
 # ====================================================================
 # Répertoire de sauvegarde du meilleur modèle
-FILE_BEST_MODELE = 'resources/modele/best_model.pickle'
+FILE_BEST_MODELE = 'resources/modele/best_model_v2.pickle'
 # Répertoire de sauvegarde des dataframes nécessaires au dashboard
 # Test set brut original
 FILE_APPLICATION_TEST = 'resources/data/application_test.pickle'
