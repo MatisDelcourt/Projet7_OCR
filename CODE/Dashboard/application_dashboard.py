@@ -17,28 +17,32 @@ import matplotlib.lines as mlines
 import seaborn as sns
 import shap
 
+import os
+print("Répertoire de travail actuel:", os.getcwd())
+
+path = '/CODE/Dashboard/'
 # ====================================================================
 # VARIABLES STATIQUES
 # ====================================================================
 # Répertoire de sauvegarde du meilleur modèle
-FILE_BEST_MODELE = 'resources/modele/best_model_v2.pickle'
+FILE_BEST_MODELE = os.getcwd() + path + 'resources/modele/best_model_v2.pickle'
 # Répertoire de sauvegarde des dataframes nécessaires au dashboard
 # Test set brut original
-FILE_APPLICATION_TEST = 'resources/data/application_test.pickle'
+FILE_APPLICATION_TEST = os.getcwd() + path + 'resources/data/application_test.pickle'
 # Test set pré-procédé
-FILE_TEST_SET = 'resources/data/test_set.pickle'
+FILE_TEST_SET = os.getcwd() + path + 'resources/data/test_set.pickle'
 # Dashboard
-FILE_DASHBOARD = 'resources/data/df_dashboard.pickle'
+FILE_DASHBOARD = os.getcwd() + path + 'resources/data/df_dashboard.pickle'
 # Client
-FILE_CLIENT_INFO = 'resources/data/df_info_client.pickle'
-FILE_CLIENT_PRET = 'resources/data/df_pret_client.pickle'
+FILE_CLIENT_INFO = os.getcwd() + path + 'resources/data/df_info_client.pickle'
+FILE_CLIENT_PRET = os.getcwd() + path + 'resources/data/df_pret_client.pickle'
 # 10 plus proches voisins du train set
-FILE_VOISINS_INFO = 'resources/data/df_info_voisins.pickle'
-FILE_VOISIN_PRET = 'resources/data/df_pret_voisins.pickle'
-FILE_VOISIN_AGG = 'resources/data/df_voisin_train_agg.pickle'
-FILE_ALL_TRAIN_AGG = 'resources/data/df_all_train_agg.pickle'
+FILE_VOISINS_INFO = os.getcwd() + path + 'resources/data/df_info_voisins.pickle'
+FILE_VOISIN_PRET = os.getcwd() + path + 'resources/data/df_pret_voisins.pickle'
+FILE_VOISIN_AGG = os.getcwd() + path + 'resources/data/df_voisin_train_agg.pickle'
+FILE_ALL_TRAIN_AGG = os.getcwd() + path + 'resources/data/df_all_train_agg.pickle'
 # Shap values
-FILE_SHAP_VALUES = 'resources/data/shap_values.pickle'
+FILE_SHAP_VALUES = os.getcwd() + path + 'resources/data/shap_values.pickle'
 
 # ====================================================================
 # VARIABLES GLOBALES
@@ -79,9 +83,9 @@ group_val4 = ['CAR_EMPLOYED_RATIO_MEAN', 'CODE_GENDER_MEAN',
 # IMAGES
 # ====================================================================
 # Logo de l'entreprise
-logo =  Image.open("resources/images/logo.png") 
+logo =  Image.open("CODE/Dashboard/resources/images/logo.png") 
 # Légende des courbes
-lineplot_legende =  Image.open("resources/images/lineplot_legende.png") 
+lineplot_legende =  Image.open("CODE/Dashboard/resources/images/lineplot_legende.png") 
 
 # ====================================================================
 # HTML MARKDOWN
