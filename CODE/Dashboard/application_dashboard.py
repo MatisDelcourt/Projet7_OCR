@@ -42,8 +42,23 @@ FILE_VOISIN_PRET = os.getcwd() + path + 'resources/data/df_pret_voisins.pickle'
 FILE_VOISIN_AGG = os.getcwd() + path + 'resources/data/df_voisin_train_agg.pickle'
 FILE_ALL_TRAIN_AGG = os.getcwd() + path + 'resources/data/df_all_train_agg.pickle'
 # Shap values
-FILE_SHAP_VALUES = os.getcwd() + path + 'resources/data/shap_values.pickle'
+import warnings
+warnings.filterwarnings('ignore')
+import zipfile
 
+# Chemin vers le fichier zip
+base_path = os.getcwd() + path + 'resources'
+zip_path = os.getcwd() + path + 'resources/data/shap_values.zip'
+# Ouvrir l'archive zip
+with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+    # Liste des noms de fichiers dans l'archive
+    zip_files = zip_ref.namelist()
+    zip_ref.extractall(os.path.join(base_path, 'data'))
+
+# Chemin complet vers le fichier extrait
+file_shap_values = os.path.join(base_path, 'data', zip_files[0])
+
+FILE_SHAP_VALUES = file_shap_values
 # ====================================================================
 # VARIABLES GLOBALES
 # ====================================================================
@@ -227,18 +242,18 @@ df_info_client, df_pret_client, df_info_voisins, df_pret_voisins, \
 # CHOIX DU CLIENT
 # ====================================================================
 
-html_select_client="""
-    <div class="card">
-      <div class="card-body" style="border-radius: 10px 10px 0px 0px;
-                  background: #DEC7CB; padding-top: 5px; width: auto;
-                  height: 40px;">
-        <h3 class="card-title" style="background-color:#DEC7CB; color:Crimson;
-                   font-family:Georgia; text-align: center; padding: 0px 0;">
-          Informations sur le client / demande de prêt
-        </h3>
-      </div>
-    </div>
-    """
+html_select_client = """
+<div class="card">
+  <div class="card-body" style="border-radius: 10px 10px 0px 0px;
+              background: #DEC7CB; padding-top: 5px; width: auto;
+              height: 40px;">
+    <h3 class="card-title" style="background-color:#DEC7CB; color:Crimson;
+               font-family:'Roboto', sans-serif; text-align: center; padding: 0px 0;">
+      Informations sur le client / demande de prêt
+    </h3>
+  </div>
+</div>
+"""
 
 st.markdown(html_select_client, unsafe_allow_html=True)
 
@@ -305,38 +320,32 @@ pourc_def_voisins_test = int(np.rint(df_dashboard[
 
 # Graphique de jauge du cédit score ==========================================
 fig_jauge = go.Figure(go.Indicator(
-    mode = 'gauge+number+delta',
-    # Score du client en % df_dashboard['SCORE_CLIENT_%']
-    value = score_client,  
-    domain = {'x': [0, 1], 'y': [0, 1]},
-    title = {'text': 'Crédit score du client', 'font': {'size': 24}},
-    # Score des 10 voisins test set
-    # df_dashboard['SCORE_10_VOISINS_MEAN_TEST']
-    delta = {'reference': score_moy_voisins_test,
-             'increasing': {'color': 'Crimson'},
-             'decreasing': {'color': 'Green'}},
-    gauge = {'axis': {'range': [None, 100],
-                      'tickwidth': 3,
-                      'tickcolor': 'darkblue'},
-             'bar': {'color': 'white', 'thickness' : 0.25},
-             'bgcolor': 'white',
-             'borderwidth': 2,
-             'bordercolor': 'gray',
-             'steps': [{'range': [0, 25], 'color': 'Green'},
-                       {'range': [25, 49.49], 'color': 'LimeGreen'},
-                       {'range': [49.5, 50.5], 'color': 'red'},
-                       {'range': [50.51, 75], 'color': 'Orange'},
-                       {'range': [75, 100], 'color': 'Crimson'}],
-             'threshold': {'line': {'color': 'white', 'width': 10},
-                           'thickness': 0.8,
-                           # Score du client en %
-                           # df_dashboard['SCORE_CLIENT_%']
-                           'value': score_client}}))
+    mode='gauge+number+delta',
+    value=score_client,
+    domain={'x': [0, 1], 'y': [0, 1]},
+    title={'text': "Crédit Score du Client", 'font': {'size': 24}},
+    delta={'reference': 76, 'increasing': {'color': 'Crimson'}, 'decreasing': {'color': 'Green'}},
+    gauge={
+        'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': 'darkblue'},
+        'bar': {'color': 'darkblue', 'thickness': 0.3},
+        'bgcolor': 'white',
+        'borderwidth': 2,
+        'bordercolor': 'gray',
+        'steps': [
+            {'range': [0, 25], 'color': 'LightGreen'},
+            {'range': [25, 50], 'color': 'YellowGreen'},
+            {'range': [50, 75], 'color': 'DarkOrange'},
+            {'range': [75, 100], 'color': 'Crimson'}
+        ],
+        'threshold': {'line': {'color': 'red', 'width': 4}, 'thickness': 0.75, 'value': score_client}
+    }
+))
 
-fig_jauge.update_layout(paper_bgcolor='white',
-                        height=400, width=500,
-                        font={'color': 'darkblue', 'family': 'Arial'},
-                        margin=dict(l=0, r=0, b=0, t=0, pad=0))
+fig_jauge.update_layout(
+    paper_bgcolor='white',
+    height=400, width=600,
+    font={'color': 'darkblue', 'family': 'Arial'}
+)
 
 with st.container():
     # JAUGE + récapitulatif du score moyen des voisins
@@ -400,7 +409,7 @@ def all_infos_clients():
                   height: 40px;">
                   <h3 class="card-title" style="background-color:#DEC7CB; color:Crimson;
                       font-family:Georgia; text-align: center; padding: 0px 0;">
-                      Plus infos
+                      Infos supplémentaires
                   </h3>
             </div>
         </div>
@@ -553,25 +562,35 @@ def infos_clients_similaires():
                                                   
                     col1, col2 = st.columns([1, 1.5])
                     with col1:
-                        # Lineplot de comparaison des features importances client courant/voisins/all ================
-                        plt.figure(figsize=(6, 6))
-                        plt.plot(x_gp1, y_feat_client_gp1, color='Orange')
-                        plt.plot(x_gp1, y_moy_feat_voisins_gp3, color='Green')
-                        plt.plot(x_gp1, y_all_train_nondef_gp3, color='Green')
-                        plt.plot(x_gp1, y_all_train_def_gp3, color='Crimson')
-                        plt.xticks(rotation=90)
-                        st.set_option('deprecation.showPyplotGlobalUse', False)
-                        st.pyplot()
+                        fig, ax = plt.subplots(figsize=(6, 6))
+
+                        # Dessiner les lignes sur les axes spécifiés
+                        ax.plot(x_gp1, y_feat_client_gp1, color='Orange', label='Client Courant')
+                        ax.plot(x_gp1, y_moy_feat_voisins_gp3, color='Green', label='Moyenne Voisins')
+                        ax.plot(x_gp1, y_all_train_nondef_gp3, color='Green', label='Train Non Défaut')
+                        ax.plot(x_gp1, y_all_train_def_gp3, color='Crimson', label='Train Défaut')
+
+                        # Configurer les étiquettes des axes
+                        ax.set_xticklabels(x_gp1, rotation=90)
+                        ax.legend()  # Ajouter une légende pour clarifier les couleurs
+
+                        # Afficher la figure dans Streamlit
+                        st.pyplot(fig)
                     with col2: 
+                        fig, ax = plt.subplots(figsize=(8, 5))
                         # Lineplot de comparaison des features importances client courant/voisins/all ================
-                        plt.figure(figsize=(8, 5))
-                        plt.plot(x_gp2, y_feat_client_gp2, color='Orange')
-                        plt.plot(x_gp2, y_moy_feat_voisins_gp4, color='Green')
-                        plt.plot(x_gp2, y_all_train_nondef_gp4, color='Green')
-                        plt.plot(x_gp2, y_all_train_def_gp4, color='Crimson')
-                        plt.xticks(rotation=90)
-                        st.set_option('deprecation.showPyplotGlobalUse', False)
-                        st.pyplot()
+                        # Dessiner les lignes sur les axes spécifiés
+                        ax.plot(x_gp2, y_feat_client_gp2, color='Orange', label='Client Courant')
+                        ax.plot(x_gp2, y_moy_feat_voisins_gp4, color='Green', label='Moyenne Voisins')
+                        ax.plot(x_gp2, y_all_train_nondef_gp4, color='Green', label='Train Non Défaut')
+                        ax.plot(x_gp2, y_all_train_def_gp4, color='Crimson', label='Train Défaut')
+
+                        # Configurer les étiquettes des axes
+                        ax.set_xticklabels(x_gp2, rotation=90)
+                        ax.legend()  # Ajouter une légende pour clarifier les couleurs
+
+                        # Afficher la figure dans Streamlit
+                        st.pyplot(fig)
                         
                     with st.container(): 
                         
@@ -656,38 +675,50 @@ def infos_clients_similaires():
                                 st.plotly_chart(fig_amt)
 
                                 # ==================== ViolinPlot ========================================================
-                                sns.violinplot(x='PRED_CLASSE_CLIENT', y='AMT_ANNUITY',
-                                               data=df_dashboard,
-                                               palette=['Green', 'Crimson'])
+                                # Création de la figure et des axes pour le violin plot
+                                fig, ax = plt.subplots(figsize=(10, 6))  # Ajustez la taille selon vos besoins
 
-                                plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                         amt_client,
-                                         color="orange",
-                                         marker="$\\bigotimes$", markersize=28)
-                                plt.xlabel('TARGET', fontsize=16)
+                                # Utilisation de Seaborn sur les axes spécifiques
+                                sns.violinplot(x='PRED_CLASSE_CLIENT', y='AMT_ANNUITY',
+                                            data=df_dashboard,
+                                            palette=['SteelBlue', 'Crimson'],
+                                            ax=ax)
+
+                                # Marquer la position du client
+                                ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                        amt_client,
+                                        color="orange",
+                                        marker="$\\bigotimes$", markersize=28)
+                                ax.set_xlabel('TARGET', fontsize=16)
                                 client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                       linestyle='None',
-                                                       markersize=16, label='Position du client')
-                                plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                st.pyplot()
+                                                    linestyle='None',
+                                                    markersize=16, label='Position du client')
+                                ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                # Afficher le graphique dans Streamlit
+                                st.pyplot(fig)
                                     
                                 # ==================== DistPlot ==========================================================
                                 # Non-défaillants
-                                sns.distplot(df_dashboard['AMT_ANNUITY'][df_dashboard[
-                                    'PRED_CLASSE_CLIENT'] == 0],
-                                             label='Non-Défaillants', hist=False, color='Green')
+                                # Création d'une nouvelle figure pour distplot
+                                fig, ax = plt.subplots(figsize=(10, 6))
+
+                                # Non-défaillants
+                                sns.kdeplot(df_dashboard['AMT_ANNUITY'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                            label='Non-Défaillants', ax=ax, color='SteelBlue', fill=True)
+
                                 # Défaillants
-                                sns.distplot(df_dashboard['AMT_ANNUITY'][df_dashboard[
-                                    'PRED_CLASSE_CLIENT'] == 1],
-                                             label='Défaillants', hist=False, color='Crimson')
-                                plt.xlabel('AMT_ANNUITY', fontsize=16)
-                                plt.ylabel('Probability Density', fontsize=16)
-                                plt.xticks(fontsize=16, rotation=90)
-                                plt.yticks(fontsize=16)
-                                # Position du client
-                                plt.axvline(x=amt_client, color='orange', label='Position du client')
-                                plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                st.pyplot()                                  
+                                sns.kdeplot(df_dashboard['AMT_ANNUITY'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                            label='Défaillants', ax=ax, color='Crimson', fill=True)
+
+                                # Marquer la position du client
+                                ax.axvline(x=amt_client, color='orange', label='Position du client', linewidth=2)
+                                ax.set_xlabel('AMT_ANNUITY', fontsize=16)
+                                ax.set_ylabel('Probability Density', fontsize=16)
+                                ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                # Afficher le graphique dans Streamlit
+                                st.pyplot(fig)                               
 
 
                         # ==============================================================
@@ -746,38 +777,46 @@ def infos_clients_similaires():
                                 st.plotly_chart(fig_bccdm)           
                                 
                                 # ==================== ViolinPlot ========================================================
-                                sns.violinplot(x='PRED_CLASSE_CLIENT', y='BUREAU_CURRENT_CREDIT_DEBT_DIFF_MIN',
-                                               data=df_dashboard,
-                                               palette=['Green', 'Crimson'])
+                                fig, ax = plt.subplots(figsize=(10, 6))
 
-                                plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                         bccddm_client,
-                                         color="orange",
-                                         marker="$\\bigotimes$", markersize=28)
-                                plt.xlabel('TARGET', fontsize=16)
+                                sns.violinplot(x='PRED_CLASSE_CLIENT', y='BUREAU_CURRENT_CREDIT_DEBT_DIFF_MIN',
+                                            data=df_dashboard,
+                                            palette=['SteelBlue', 'Crimson'],
+                                            ax=ax)
+
+                                ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                        bccddm_client,
+                                        color="orange",
+                                        marker="$\\bigotimes$", markersize=28)
+                                ax.set_xlabel('TARGET', fontsize=16)
                                 client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                       linestyle='None',
-                                                       markersize=16, label='Position du client')
-                                plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                st.pyplot()
+                                                    linestyle='None',
+                                                    markersize=16, label='Position du client')
+                                ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                st.pyplot(fig)
                                     
                                 # ==================== DistPlot ==========================================================
                                 # Non-défaillants
-                                sns.distplot(df_dashboard['BUREAU_CURRENT_CREDIT_DEBT_DIFF_MIN'][df_dashboard[
-                                    'PRED_CLASSE_CLIENT'] == 0],
-                                             label='Non-Défaillants', hist=False, color='Green')
-                                # Défaillants
-                                sns.distplot(df_dashboard['BUREAU_CURRENT_CREDIT_DEBT_DIFF_MIN'][df_dashboard[
-                                    'PRED_CLASSE_CLIENT'] == 1],
-                                             label='Défaillants', hist=False, color='Crimson')
-                                plt.xlabel('BUREAU_CURRENT_CREDIT_DEBT_DIFF_MIN', fontsize=16)
-                                plt.ylabel('Probability Density', fontsize=16)
-                                plt.xticks(fontsize=16, rotation=90)
-                                plt.yticks(fontsize=16)
-                                # Position du client
-                                plt.axvline(x=bccddm_client, color='orange', label='Position du client')
-                                plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                st.pyplot()                                  
+                                fig, ax = plt.subplots(figsize=(10, 6))
+
+                                sns.kdeplot(df_dashboard['BUREAU_CURRENT_CREDIT_DEBT_DIFF_MIN'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                            ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
+                                sns.kdeplot(df_dashboard['BUREAU_CURRENT_CREDIT_DEBT_DIFF_MIN'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                            ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                ax.axvline(x=bccddm_client, color='orange', label='Position du client', linewidth=2)
+                                ax.set_xlabel('BUREAU_CURRENT_CREDIT_DEBT_DIFF_MIN', fontsize=16)
+                                ax.set_ylabel('Probability Density', fontsize=16)
+                                # Définir les labels des ticks de l'axe x
+                                ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+
+                                # Définir les labels des ticks de l'axe y
+                                ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                st.pyplot(fig)                               
 
                                 
                         # ==============================================================
@@ -836,38 +875,47 @@ def infos_clients_similaires():
                                 st.plotly_chart(fig_bccddmean) 
                                 
                                 # ==================== ViolinPlot ========================================================
-                                sns.violinplot(x='PRED_CLASSE_CLIENT', y='BUREAU_CURRENT_CREDIT_DEBT_DIFF_MEAN',
-                                               data=df_dashboard,
-                                               palette=['Green', 'Crimson'])
+                                fig, ax = plt.subplots(figsize=(10, 6))
 
-                                plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                         bccddmean_client,
-                                         color="orange",
-                                         marker="$\\bigotimes$", markersize=28)
-                                plt.xlabel('TARGET', fontsize=16)
+                                sns.violinplot(x='PRED_CLASSE_CLIENT', y='BUREAU_CURRENT_CREDIT_DEBT_DIFF_MEAN',
+                                            data=df_dashboard,
+                                            palette=['SteelBlue', 'Crimson'],
+                                            ax=ax)
+
+                                ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                        bccddmean_client,
+                                        color="orange",
+                                        marker="$\\bigotimes$", markersize=28)
+                                ax.set_xlabel('TARGET', fontsize=16)
                                 client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                       linestyle='None',
-                                                       markersize=16, label='Position du client')
-                                plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                st.pyplot()
+                                                    linestyle='None',
+                                                    markersize=16, label='Position du client')
+                                ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                st.pyplot(fig)
                                     
                                 # ==================== DistPlot ==========================================================
+                                fig, ax = plt.subplots(figsize=(10, 6))
+
                                 # Non-défaillants
-                                sns.distplot(df_dashboard['BUREAU_CURRENT_CREDIT_DEBT_DIFF_MEAN'][df_dashboard[
-                                    'PRED_CLASSE_CLIENT'] == 0],
-                                             label='Non-Défaillants', hist=False, color='Green')
+                                sns.kdeplot(df_dashboard['BUREAU_CURRENT_CREDIT_DEBT_DIFF_MEAN'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                            ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                 # Défaillants
-                                sns.distplot(df_dashboard['BUREAU_CURRENT_CREDIT_DEBT_DIFF_MEAN'][df_dashboard[
-                                    'PRED_CLASSE_CLIENT'] == 1],
-                                             label='Défaillants', hist=False, color='Crimson')
-                                plt.xlabel('BUREAU_CURRENT_CREDIT_DEBT_DIFF_MEAN', fontsize=16)
-                                plt.ylabel('Probability Density', fontsize=16)
-                                plt.xticks(fontsize=16, rotation=90)
-                                plt.yticks(fontsize=16)
-                                # Position du client
-                                plt.axvline(x=bccddmean_client, color='orange', label='Position du client')
-                                plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                st.pyplot()
+                                sns.kdeplot(df_dashboard['BUREAU_CURRENT_CREDIT_DEBT_DIFF_MEAN'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                            ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                ax.axvline(x=bccddmean_client, color='orange', label='Position du client', linewidth=2)
+                                ax.set_xlabel('BUREAU_CURRENT_CREDIT_DEBT_DIFF_MEAN', fontsize=16)
+                                ax.set_ylabel('Probability Density', fontsize=16)
+                                # Définir les labels des ticks de l'axe x
+                                ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+
+                                # Définir les labels des ticks de l'axe y
+                                ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                st.pyplot(fig)
                                 
                                 
                         # ==============================================================
@@ -930,40 +978,49 @@ def infos_clients_similaires():
         
                                     # Go Indicator bullets
                                     st.plotly_chart(fig_bcdtcrm) 
-                                     
+
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='BUREAU_CURRENT_DEBT_TO_CREDIT_RATIO_MEAN',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             bcdtcrm_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            bcdtcrm_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['BUREAU_CURRENT_DEBT_TO_CREDIT_RATIO_MEAN'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['BUREAU_CURRENT_DEBT_TO_CREDIT_RATIO_MEAN'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['BUREAU_CURRENT_DEBT_TO_CREDIT_RATIO_MEAN'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('BUREAU_CURRENT_DEBT_TO_CREDIT_RATIO_MEAN', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=bcdtcrm_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()
+                                    sns.kdeplot(df_dashboard['BUREAU_CURRENT_DEBT_TO_CREDIT_RATIO_MEAN'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=bcdtcrm_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('BUREAU_CURRENT_DEBT_TO_CREDIT_RATIO_MEAN', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    # Définir les labels des ticks de l'axe x
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+
+                                    # Définir les labels des ticks de l'axe y
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)
                                      
                                 else:
                                     
@@ -1032,38 +1089,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_cer) 
 
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='CAR_EMPLOYED_RATIO',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             cer_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            cer_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['CAR_EMPLOYED_RATIO'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['CAR_EMPLOYED_RATIO'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['CAR_EMPLOYED_RATIO'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('CAR_EMPLOYED_RATIO', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=cer_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()
+                                    sns.kdeplot(df_dashboard['CAR_EMPLOYED_RATIO'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=cer_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('CAR_EMPLOYED_RATIO', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)
                                     
                                 else:
                                     
@@ -1131,38 +1194,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_car) 
                                     
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='CREDIT_ANNUITY_RATIO',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             car_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            car_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['CREDIT_ANNUITY_RATIO'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['CREDIT_ANNUITY_RATIO'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='Green', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['CREDIT_ANNUITY_RATIO'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('CREDIT_ANNUITY_RATIO', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=car_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()
+                                    sns.kdeplot(df_dashboard['CREDIT_ANNUITY_RATIO'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=car_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('CREDIT_ANNUITY_RATIO', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)
                                     
                                 else:
                                     
@@ -1231,38 +1300,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_cgr) 
                                     
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='CREDIT_GOODS_RATIO',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             cgr_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            cgr_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['CREDIT_GOODS_RATIO'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['CREDIT_GOODS_RATIO'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['CREDIT_GOODS_RATIO'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('CREDIT_GOODS_RATIO', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=cgr_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['CREDIT_GOODS_RATIO'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=cgr_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('CREDIT_GOODS_RATIO', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                                
                                     
                                 else:
                                     
@@ -1329,38 +1404,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_age) 
                                     
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='YEAR_BIRTH',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             age_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            age_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['YEAR_BIRTH'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['YEAR_BIRTH'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['YEAR_BIRTH'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('YEAR_BIRTH', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=age_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['YEAR_BIRTH'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=age_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('YEAR_BIRTH', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                               
                                                                         
                                 else:
                                     
@@ -1428,38 +1509,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_dip) 
                                      
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='DAYS_ID_PUBLISH',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             dip_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            dip_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['DAYS_ID_PUBLISH'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['DAYS_ID_PUBLISH'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['DAYS_ID_PUBLISH'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('DAYS_ID_PUBLISH', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=dip_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['DAYS_ID_PUBLISH'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=dip_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('DAYS_ID_PUBLISH', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                                 
                                                                                                            
                                 else:
                                     
@@ -1527,38 +1614,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_es1) 
                                      
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='EXT_SOURCE_1',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             es1_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            es1_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['EXT_SOURCE_1'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['EXT_SOURCE_1'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['EXT_SOURCE_1'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('EXT_SOURCE_1', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=es1_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['EXT_SOURCE_1'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=es1_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('EXT_SOURCE_1', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                              
                                                                                                            
                                 else:
                                     
@@ -1626,38 +1719,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_es2) 
 
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='EXT_SOURCE_2',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             es2_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            es2_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['EXT_SOURCE_2'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['EXT_SOURCE_2'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['EXT_SOURCE_2'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('EXT_SOURCE_2', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=es2_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['EXT_SOURCE_2'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=es2_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('EXT_SOURCE_2', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                                
                                    
                                 else:
                                     
@@ -1725,38 +1824,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_es3) 
 
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='EXT_SOURCE_3',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             es3_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            es3_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['EXT_SOURCE_3'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['EXT_SOURCE_3'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['EXT_SOURCE_3'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('EXT_SOURCE_3', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=es3_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['EXT_SOURCE_3'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=es3_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('EXT_SOURCE_3', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                                 
                                     
                                 else:
                                     
@@ -1824,38 +1929,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_esm) 
 
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='EXT_SOURCE_MAX',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             esm_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            esm_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['EXT_SOURCE_MAX'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['EXT_SOURCE_MAX'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['EXT_SOURCE_MAX'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('EXT_SOURCE_MAX', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=esm_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['EXT_SOURCE_MAX'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=esm_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('EXT_SOURCE_MAX', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                                 
                                                                         
                                 else:
                                     
@@ -1923,38 +2034,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_ess) 
 
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='EXT_SOURCE_SUM',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             ess_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            ess_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['EXT_SOURCE_SUM'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['EXT_SOURCE_SUM'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['EXT_SOURCE_SUM'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('EXT_SOURCE_SUM', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=ess_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['EXT_SOURCE_SUM'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=ess_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('EXT_SOURCE_SUM', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                             
                                     
                                 else:
                                     
@@ -2023,38 +2140,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_ipais) 
 
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='INST_PAY_AMT_INSTALMENT_SUM',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             ipais_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            ipais_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['INST_PAY_AMT_INSTALMENT_SUM'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['INST_PAY_AMT_INSTALMENT_SUM'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['INST_PAY_AMT_INSTALMENT_SUM'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('INST_PAY_AMT_INSTALMENT_SUM', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=ipais_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['INST_PAY_AMT_INSTALMENT_SUM'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=ipais_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('INST_PAY_AMT_INSTALMENT_SUM', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                               
                                     
                                 else:
                                     
@@ -2126,38 +2249,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_ipdprm) 
 
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='INST_PAY_DAYS_PAYMENT_RATIO_MAX',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             ipdprm_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            ipdprm_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['INST_PAY_DAYS_PAYMENT_RATIO_MAX'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['INST_PAY_DAYS_PAYMENT_RATIO_MAX'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['INST_PAY_DAYS_PAYMENT_RATIO_MAX'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('INST_PAY_DAYS_PAYMENT_RATIO_MAX', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=ipdprm_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['INST_PAY_DAYS_PAYMENT_RATIO_MAX'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=ipdprm_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('INST_PAY_DAYS_PAYMENT_RATIO_MAX', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                                
                                                                         
                                 else:
                                     
@@ -2225,38 +2354,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_pcncsas) 
 
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='POS_CASH_NAME_CONTRACT_STATUS_ACTIVE_SUM',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             pcncsas_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            pcncsas_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['POS_CASH_NAME_CONTRACT_STATUS_ACTIVE_SUM'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['POS_CASH_NAME_CONTRACT_STATUS_ACTIVE_SUM'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['POS_CASH_NAME_CONTRACT_STATUS_ACTIVE_SUM'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('POS_CASH_NAME_CONTRACT_STATUS_ACTIVE_SUM', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=pcncsas_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['POS_CASH_NAME_CONTRACT_STATUS_ACTIVE_SUM'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=pcncsas_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('POS_CASH_NAME_CONTRACT_STATUS_ACTIVE_SUM', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                               
                                                                                                             
                                 else:
                                     
@@ -2326,38 +2461,44 @@ def infos_clients_similaires():
                                     st.plotly_chart(fig_paism) 
 
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='PREV_APP_INTEREST_SHARE_MAX',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             paism_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            paism_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['PREV_APP_INTEREST_SHARE_MAX'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['PREV_APP_INTEREST_SHARE_MAX'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['PREV_APP_INTEREST_SHARE_MAX'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('PREV_APP_INTEREST_SHARE_MAX', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=paism_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['PREV_APP_INTEREST_SHARE_MAX'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=paism_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('PREV_APP_INTEREST_SHARE_MAX', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                               
                                                                                                                                                 
                                 else:
                                     
@@ -2378,38 +2519,44 @@ def infos_clients_similaires():
                                     st.markdown(html_CODE_GENDER, unsafe_allow_html=True)
 
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='CODE_GENDER',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             cg_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            cg_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['CODE_GENDER'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['CODE_GENDER'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['CODE_GENDER'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('CODE_GENDER', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=cg_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()                                   
+                                    sns.kdeplot(df_dashboard['CODE_GENDER'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=cg_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('CODE_GENDER', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)                                 
                                                                              
 
                         # ==============================================================
@@ -2426,38 +2573,44 @@ def infos_clients_similaires():
                                     st.markdown(html_FLAG_OWN_CAR, unsafe_allow_html=True)
                                     
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='FLAG_OWN_CAR',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             foc_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            foc_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['FLAG_OWN_CAR'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['FLAG_OWN_CAR'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['FLAG_OWN_CAR'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('FLAG_OWN_CAR', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=foc_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()  
+                                    sns.kdeplot(df_dashboard['FLAG_OWN_CAR'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=foc_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('FLAG_OWN_CAR', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig) 
                                     
 
                         # ==============================================================
@@ -2474,38 +2627,44 @@ def infos_clients_similaires():
                                     st.markdown(html_NAME_EDUCATION_TYPE_HIGHER_EDUCATION, unsafe_allow_html=True)
                                     
                                     # ==================== ViolinPlot ========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     sns.violinplot(x='PRED_CLASSE_CLIENT', y='NAME_EDUCATION_TYPE_HIGHER_EDUCATION',
-                                                   data=df_dashboard,
-                                                   palette=['Green', 'Crimson'])
-    
-                                    plt.plot(df_client_courant['PRED_CLASSE_CLIENT'],
-                                             nethe_client,
-                                             color="orange",
-                                             marker="$\\bigotimes$", markersize=28)
-                                    plt.xlabel('TARGET', fontsize=16)
+                                                data=df_dashboard,
+                                                palette=['SteelBlue', 'Crimson'],
+                                                ax=ax)
+
+                                    ax.plot(df_dashboard[df_dashboard['SK_ID_CURR'] == client_id]['PRED_CLASSE_CLIENT'],
+                                            nethe_client,
+                                            color="orange",
+                                            marker="$\\bigotimes$", markersize=28)
+                                    ax.set_xlabel('TARGET', fontsize=16)
                                     client = mlines.Line2D([], [], color='orange', marker='$\\bigotimes$',
-                                                           linestyle='None',
-                                                           markersize=16, label='Position du client')
-                                    plt.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-                                    st.pyplot()
+                                                        linestyle='None',
+                                                        markersize=16, label='Position du client')
+                                    ax.legend(handles=[client], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+                                    st.pyplot(fig)
                                         
                                     # ==================== DistPlot ==========================================================
+                                    fig, ax = plt.subplots(figsize=(10, 6))
+
                                     # Non-défaillants
-                                    sns.distplot(df_dashboard['NAME_EDUCATION_TYPE_HIGHER_EDUCATION'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 0],
-                                                 label='Non-Défaillants', hist=False, color='Green')
+                                    sns.kdeplot(df_dashboard['NAME_EDUCATION_TYPE_HIGHER_EDUCATION'][df_dashboard['PRED_CLASSE_CLIENT'] == 0],
+                                                ax=ax, color='SteelBlue', fill=True, label='Non-Défaillants')
+
                                     # Défaillants
-                                    sns.distplot(df_dashboard['NAME_EDUCATION_TYPE_HIGHER_EDUCATION'][df_dashboard[
-                                        'PRED_CLASSE_CLIENT'] == 1],
-                                                 label='Défaillants', hist=False, color='Crimson')
-                                    plt.xlabel('NAME_EDUCATION_TYPE_HIGHER_EDUCATION', fontsize=16)
-                                    plt.ylabel('Probability Density', fontsize=16)
-                                    plt.xticks(fontsize=16, rotation=90)
-                                    plt.yticks(fontsize=16)
-                                    # Position du client
-                                    plt.axvline(x=nethe_client, color='orange', label='Position du client')
-                                    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
-                                    st.pyplot()  
+                                    sns.kdeplot(df_dashboard['NAME_EDUCATION_TYPE_HIGHER_EDUCATION'][df_dashboard['PRED_CLASSE_CLIENT'] == 1],
+                                                ax=ax, color='Crimson', fill=True, label='Défaillants')
+
+                                    ax.axvline(x=nethe_client, color='orange', label='Position du client', linewidth=2)
+                                    ax.set_xlabel('NAME_EDUCATION_TYPE_HIGHER_EDUCATION', fontsize=16)
+                                    ax.set_ylabel('Probability Density', fontsize=16)
+                                    ax.set_xticklabels(ax.get_xticks(), fontsize=16, rotation=90)
+                                    ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+                                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=18)
+
+                                    st.pyplot(fig)
 
 
                                     
@@ -2789,7 +2948,7 @@ dico_stats = {'Variable cible': 'TARGET',
               'AMT_REQ_CREDIT_BUREAU_YEAR': 'AMT_REQ_CREDIT_BUREAU_YEAR',
               'DAYS_ENDDATE_FACT': 'DAYS_ENDDATE_FACT'}
 
-path_img = "resources/images/stats/"
+path_img = os.getcwd() + path + "resources/images/stats/"
    
 def affiche_stats():
     ''' Affiche les statistiques générales provenant de l'EDA
@@ -2801,7 +2960,7 @@ def affiche_stats():
                   height: 40px;">
                   <h3 class="card-title" style="background-color:#DEC7CB; color:Crimson;
                       font-family:Georgia; text-align: center; padding: 0px 0;">
-                      Distribution des variables générale/pour les défaillants
+                      Distribution des variables générales/pour les défaillants
                   </h3>
             </div>
         </div>
