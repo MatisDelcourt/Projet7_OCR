@@ -140,7 +140,7 @@ html_header="""
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>             
     <h1 style="font-size:300%; color:Crimson; font-family:Arial"> Prêt à dépenser <br>
-        <h2 style="color:Gray; font-family:Georgia"> DASHBOARD</h2>
+        <h2 style="color:Gray; font-family:Roboto"> DASHBOARD</h2>
         <hr style= "  display: block;
           margin-top: 0;
           margin-bottom: 0;
@@ -287,7 +287,7 @@ html_score="""
                   background: #DEC7CB; padding-top: 5px; width: auto;
                   height: 40px;">
         <h3 class="card-title" style="background-color:#DEC7CB; color:Crimson;
-                   font-family:Georgia; text-align: center; padding: 0px 0;">
+                   font-family:Roboto; text-align: center; padding: 0px 0;">
           Crédit Score
         </h3>
       </div>
@@ -408,7 +408,7 @@ def all_infos_clients():
                   background: #DEC7CB; padding-top: 5px; width: auto;
                   height: 40px;">
                   <h3 class="card-title" style="background-color:#DEC7CB; color:Crimson;
-                      font-family:Georgia; text-align: center; padding: 0px 0;">
+                      font-family:Roboto; text-align: center; padding: 0px 0;">
                       Infos supplémentaires
                   </h3>
             </div>
@@ -444,7 +444,7 @@ def infos_clients_similaires():
                   background: #DEC7CB; padding-top: 5px; width: auto;
                   height: 40px;">
                   <h3 class="card-title" style="background-color:#DEC7CB; color:Crimson;
-                      font-family:Georgia; text-align: center; padding: 0px 0;">
+                      font-family:Roboto; text-align: center; padding: 0px 0;">
                       Clients similaires
                   </h3>
             </div>
@@ -2724,7 +2724,7 @@ def affiche_facteurs_influence():
                   background: #DEC7CB; padding-top: 5px; width: auto;
                   height: 40px;">
                   <h3 class="card-title" style="background-color:#DEC7CB; color:Crimson;
-                      font-family:Georgia; text-align: center; padding: 0px 0;">
+                      font-family:Roboto; text-align: center; padding: 0px 0;">
                       Variables importantes
                   </h3>
             </div>
@@ -2959,7 +2959,7 @@ def affiche_stats():
                   background: #DEC7CB; padding-top: 5px; width: auto;
                   height: 40px;">
                   <h3 class="card-title" style="background-color:#DEC7CB; color:Crimson;
-                      font-family:Georgia; text-align: center; padding: 0px 0;">
+                      font-family:Roboto; text-align: center; padding: 0px 0;">
                       Distribution des variables générales/pour les défaillants
                   </h3>
             </div>
@@ -2999,6 +2999,6 @@ html_line="""
   margin-right: auto;
   border-style: inset;
   border-width: 1.5px;">
-<p style="color:Gray; text-align: right; font-size:12px;">Auteur : loe.rabier@gmail.com - 17/08/2021</p>
+<p style="color:Gray; text-align: right; font-size:12px;"></p>
 """
 st.markdown(html_line, unsafe_allow_html=True)
