@@ -16,6 +16,9 @@ COPY . ./
 RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
     && rm -rf /var/lib/apt/lists/* \
     && pip install -r requirements.txt
+	
+# Exécuter les tests unitaires avant de lancer l'application
+RUN pytest
 
 # Exécuter le service web au démarrage du conteneur. Ici, nous utilisons le serveur web gunicorn,
 # avec un processus worker et 8 threads.

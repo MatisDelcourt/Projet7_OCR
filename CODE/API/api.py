@@ -66,14 +66,3 @@ def predict():
 if __name__ == "__main__":
     port = os.environ.get("PORT", 5002)
     app.run(debug=False, host="0.0.0.0", port=int(port))
-
-# Ajout d'une fonction de test
-def test_api():
-    with app.test_client() as client:
-        # Données de test
-        test_data = {'SK_ID_CURR': 100001}
-        response = client.post("/predict", json=test_data)
-        print(response.get_json())
-
-# if __name__ == "__main__":
-#     test_api()
